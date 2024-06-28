@@ -155,7 +155,6 @@ def print_experimentsteps_script(experimentsteps, exp_dir = None):
                     #if 'copy_input_data' in tdict.keys():
 
                     print('cd $PIPELINEDIR')
-                    print("PRINT 'tdict' TO SEE WHERE $RP_PILOT_SANDBOX IS COMING FROM:\n",tdict)
                     if 'pre_exec' in tdict.keys():
                         print('\n'.join(map(str,t['pre_exec'])))
                     if 'arguments' in tdict.keys():
