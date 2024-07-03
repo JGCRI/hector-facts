@@ -84,7 +84,7 @@ def run_experiment(exp_dir, debug_mode = False, alt_id = False, resourcedir = No
 
         # Run the SLR projection workflow
         amgr.run()
-
+      
     # Close the application manager
     amgr.terminate()
 
@@ -126,11 +126,11 @@ def print_experimentsteps_script(experimentsteps, exp_dir = None):
     print('#!/bin/bash\n')
 
     print('if [ -z "$WORKDIR" ]; then  ')
-    print('   WORKDIR=/scratch/`whoami`/test.`date +%s`')
+    print('   WORKDIR=/opt/facts/`whoami`/test.`date +%s`')
     print('fi')
     print('mkdir -p $WORKDIR\n')
     print('if [ -z "$OUTPUTDIR" ]; then  ')
-    print('   OUTPUTDIR=/scratch/`whoami`/test.`date +%s`/output')
+    print('   OUTPUTDIR=/opt/facts/`whoami`/test.`date +%s`/output')
     print('fi')
     print('mkdir -p $OUTPUTDIR')
     print('BASEDIR=`pwd`')
@@ -155,7 +155,6 @@ def print_experimentsteps_script(experimentsteps, exp_dir = None):
                     #if 'copy_input_data' in tdict.keys():
 
                     print('cd $PIPELINEDIR')
-
                     if 'pre_exec' in tdict.keys():
                         print('\n'.join(map(str,t['pre_exec'])))
                     if 'arguments' in tdict.keys():
