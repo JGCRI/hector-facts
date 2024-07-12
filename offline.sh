@@ -26,7 +26,7 @@ cp experiments/tlm.offline/location.lst $PIPELINEDIR
 # ---- Stage preprocess:
 
 cd $BASEDIR
-cp ./modules/facts/dummy/facts_dummy_preprocess.py experiments/tlm.offline/input/tlm.offline.temperature.fair.temperature_climate.nc $PIPELINEDIR
+cp experiments/tlm.offline/input/tlm.offline.temperature.fair.temperature_climate.nc ./modules/facts/dummy/facts_dummy_preprocess.py $PIPELINEDIR
 cd $PIPELINEDIR
 . $RP_PILOT_SANDBOX/env/rp_named_env.rp.sh || true
 python facts_dummy_preprocess.py --pipeline_id tlm.offline.dummy.facts.dummy
@@ -48,12 +48,12 @@ cp experiments/tlm.offline/location.lst $PIPELINEDIR
 # ---- Stage preprocess:
 
 cd $BASEDIR
-cp ./modules-data/tlm_sterodynamics_preprocess_data.tgz ./modules/tlm/sterodynamics/Import2lmData.py ./modules/tlm/sterodynamics/tlm_sterodynamics_preprocess_thermalexpansion.py $PIPELINEDIR
+cp ./modules/tlm/sterodynamics/tlm_sterodynamics_preprocess_thermalexpansion.py ./modules/tlm/sterodynamics/Import2lmData.py ./modules-data/tlm_sterodynamics_preprocess_data.tgz $PIPELINEDIR
 cd $PIPELINEDIR
 . $RP_PILOT_SANDBOX/env/rp_named_env.rp.sh || true
 tar -xvf tlm_sterodynamics_preprocess_data.tgz 2> /dev/null; rm tlm_sterodynamics_preprocess_data.tgz
 pip install --upgrade pip; pip install numpy scipy netCDF4 pyyaml h5py
-python3 tlm_sterodynamics_preprocess_thermalexpansion.py --scenario ssp585 --climate_data_file tlm.offline.temperature.fair.temperature_climate.nc --pipeline_id tlm.offline.ocean.tlm.sterodynamics
+python3 tlm_sterodynamics_preprocess_thermalexpansion.py --scenario ssp585 --climate_data_file $SHARED/climate/tlm.offline.temperature.fair.temperature_climate.nc --pipeline_id tlm.offline.ocean.tlm.sterodynamics
 
 
 # ---- Stage fit:
