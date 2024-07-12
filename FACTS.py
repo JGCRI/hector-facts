@@ -228,7 +228,7 @@ def GenerateTask(tcfg, ecfg, pipe_name, stage_name, task_name, workflow_name="",
                              for x in tcfg['download_output_data']])
 
     if "climate_output_data" in tcfg.keys():
-        copy_output_list.extend(['{0} > $SHARED/climate/{0}'.format(mvar_replace_dict(mvar_dict, x))
+        copy_output_list.extend(['{0} > {0}'.format(mvar_replace_dict(mvar_dict, x))
                                 for x in tcfg['climate_output_data']])
         download_list.extend(['{0} > {1}/{0}'.format(mvar_replace_dict(mvar_dict, x), outdir)
                              for x in tcfg['climate_output_data']])
@@ -254,7 +254,7 @@ def GenerateTask(tcfg, ecfg, pipe_name, stage_name, task_name, workflow_name="",
     # allow experiment config to specify file
 
     if "climate_output_data" in ecfg['options'].keys():
-        copy_output_list.extend(['{0} > $SHARED/climate/{0}'.format(mvar_replace_dict(mvar_dict, x))
+        copy_output_list.extend(['{0} > /{0}'.format(mvar_replace_dict(mvar_dict, x))
                                 for x in ecfg['options']['climate_output_data']])
         download_list.extend(['{0} > {1}/{0}'.format(mvar_replace_dict(mvar_dict, x), outdir)
                              for x in ecfg['options']['climate_output_data']])        
@@ -390,11 +390,11 @@ def IdentifyClimateOutputFiles(pcfg,pipe_name):
             if "climate_output_data" in tcfg.keys():
                 for this_file in tcfg['climate_output_data']:
                     if this_file.__contains__('climate.nc'):
-                        pd['climate'] = '$SHARED/climate/' + mvar_replace_dict(mvar_dict, this_file)
+                        pd['climate'] = '' + mvar_replace_dict(mvar_dict, this_file)
                     elif this_file.__contains__('gsat.nc'):
-                        pd['gsat'] = '$SHARED/climate/' + mvar_replace_dict(mvar_dict, this_file)
+                        pd['gsat'] = '' + mvar_replace_dict(mvar_dict, this_file)
                     elif this_file.__contains__('ohc.nc'):
-                        pd['ohc'] = '$SHARED/climate/' + mvar_replace_dict(mvar_dict, this_file)
+                        pd['ohc'] = '' + mvar_replace_dict(mvar_dict, this_file)
  
     return pd
 
