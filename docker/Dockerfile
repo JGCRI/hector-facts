@@ -1,12 +1,9 @@
 FROM ubuntu:focal AS facts-core
 
-# set env variables for RCT and apt
 ENV DEBIAN_FRONTEND="noninteractive"
 
-# set shell for RUN instruction
 SHELL [ "/bin/bash", "-c" ]
 
-# installs dependences
 RUN apt-get update &&\
     apt-get install -y \
         python3.9 \
@@ -22,11 +19,9 @@ RUN apt-get update &&\
         dnsutils \
         iputils-ping
 
-# Creates and activates python3 virtual environment
-RUN python3 -m venv --system-site-packages factsVe &&\
-    source factsVe/bin/activate
+RUN python3 -m venv --system-site-packages /home/${NB_USER}/factsVe &&\
+    source /home/${NB_USER}/factsVe/bin/activate
 
-# installs required FACTS packages
 RUN pip install --no-cache-dir --upgrade \
         setuptools==69.0.2 pip==23.3.1 wheel==0.42.0
 
@@ -42,14 +37,12 @@ RUN pip install --no-cache-dir \
         netcdf4==1.6.5 \
         h5py \
         dask
-        
-# installs R for ubuntu 20.04 Foca
+
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends r-base \
         cmake \
         libopenblas-dev \
         gfortran
-
 
 ARG NB_USER=jovyan
 ARG NB_UID=1000
@@ -62,29 +55,25 @@ RUN adduser --disabled-password \
     --uid ${NB_UID} \
     ${NB_USER}
 
-# Make sure the contents of our repo are in ${HOME}
 USER root
-RUN chown -R ${NB_UID} ${HOME}
+RUN chown -R ${NB_UID}:${NB_UID} /home/${NB_USER}
 USER ${NB_USER}
 
-# make directory for radical pilot sandbox
-RUN mkdir -p ~/radical.pilot.sandbox
+RUN mkdir -p /home/${NB_USER}/radical.pilot.sandbox
 
-# Activate venv
-RUN echo -e ". /factsVe/bin/activate" > ~/.bashrc
+ENV RP_PILOT_SANDBOX=/home/${NB_USER}/radical.pilot.sandbox
 
-# create resource_local.json with the specified contents as well as
-# create resource_local.json with the specified contents
-RUN mkdir -p ~/.radical/pilot/configs
+RUN echo 'source /home/${NB_USER}/factsVe/bin/activate' >> /home/${NB_USER}/.bashrc
+
+RUN mkdir -p /home/${NB_USER}/.radical/pilot/configs
 RUN printf '{\n\
     "local": {\n\
         "rp_version"    : "installed",\n\
         "virtenv_mode"  : "use"\n\
     }\n\
-}' > ~/.radical/pilot/configs/resource_local.json
+}' > /home/${NB_USER}/.radical/pilot/configs/resource_local.json
 
-# return a shell to the user
-CMD /bin/bash
+CMD ["/bin/bash", "-c", "source /home/${NB_USER}/factsVe/bin/activate && exec /bin/bash"]
 
 FROM facts-core AS facts-jupyter
 
@@ -98,4 +87,4 @@ RUN pip install --no-cache-dir \
 EXPOSE 8888
 USER ${NB_USER}
 
-#ENTRYPOINT ["jupyter", "lab","--ip=0.0.0.0","--allow-root"]
+ENTRYPOINT ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]
