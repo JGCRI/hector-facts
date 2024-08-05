@@ -131,6 +131,11 @@ def print_experimentsteps_script(experimentsteps, exp_dir = None):
     print('OUTPUTDIR=$HOME/scratch/`whoami`/test.`date +%s`/output')
     print('mkdir -p $OUTPUTDIR')
     print('BASEDIR=`pwd`')
+    print('SHARED=$BASEDIR')
+    print('mkdir -p $RP_PILOT_SANDBOX/env')
+    print('cd $BASEDIR')
+    print('cp -r rp_named_env.rp.sh $RP_PILOT_SANDBOX/env/')
+
 
     for this_step, pipelines in experimentsteps.items():
         print('\n#EXPERIMENT STEP: ', this_step, '\n')
