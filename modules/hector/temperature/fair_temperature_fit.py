@@ -2,10 +2,11 @@ import os
 import sys
 import argparse
 import pickle
+import pandas as pd
 import xarray as xr
 
 
-def fair_fit_temperature(param_file, pipeline_id):
+def hector_fit_temperature(param_file, pipeline_id):
 
 	# Load the AR6 calibrated parameters for the FAIR model
 	pars = xr.load_dataset("./parameters/fair_ar6_climate_params_v4.0.nc")
@@ -16,6 +17,13 @@ def fair_fit_temperature(param_file, pipeline_id):
 	pickle.dump(output, outfile, protocol=-1)
 	outfile.close()
 
+    # Read in and save a copy of the parameters for the Hector model
+    pars = csv.reader("./parameters/hector_params.csv")
+    output = {"pars": pars, "param_file": param_file}
+    outfile = open(os.path.join(os.path.dirname(__file__), "{}_testing-fit.pkl".format(pipeline_id)), 'wb')
+    pickle.dump(output, outfile, protocol=-1)
+    outfile.close()
+    
 	return(None)
 
 
@@ -33,7 +41,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	# Run the code
-	fair_fit_temperature(param_file=args.param_file, pipeline_id=args.pipeline_id)
+	hector_fit_temperature(param_file=args.param_file, pipeline_id=args.pipeline_id)
 
 
 	sys.exit()
