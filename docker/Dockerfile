@@ -44,6 +44,20 @@ RUN apt-get update &&\
         libopenblas-dev \
         gfortran
 
+# Installing Hector thigns TODO see if can clean up 
+RUN apt-get update && apt-get install -y \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libgit2-dev \
+    cmake \
+    git 
+
+
+# Install Hector R package from GitHub
+RUN R -e "install.packages('remotes')"
+RUN R -e "remotes::install_github('JGCRI/hector')"
+
 ARG NB_USER=jovyan
 ARG NB_UID=1000
 ENV USER ${NB_USER}
