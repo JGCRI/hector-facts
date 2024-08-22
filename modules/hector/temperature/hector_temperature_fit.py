@@ -8,22 +8,15 @@ import xarray as xr
 
 def hector_fit_temperature(param_file, pipeline_id):
 
-	# Load the AR6 calibrated parameters for the FAIR model
-	pars = xr.load_dataset("./parameters/fair_ar6_climate_params_v4.0.nc")
-
-	# Save the fit data to a pickle
+	# Read in the parameter values for Hector
+	pars = pd.read_csv('./hector_params.csv')
 	output = {"pars": pars, "param_file": param_file}
 	outfile = open(os.path.join(os.path.dirname(__file__), "{}_fit.pkl".format(pipeline_id)), 'wb')
 	pickle.dump(output, outfile, protocol=-1)
 	outfile.close()
 
-    # Read in and save a copy of the parameters for the Hector model
-    pars = csv.reader("./parameters/hector_params.csv")
-    output = {"pars": pars, "param_file": param_file}
-    outfile = open(os.path.join(os.path.dirname(__file__), "{}_testing-fit.pkl".format(pipeline_id)), 'wb')
-    pickle.dump(output, outfile, protocol=-1)
-    outfile.close()
-    
+	sys.stdout.write("Hello, World my fit script!\n")
+
 	return(None)
 
 
@@ -35,7 +28,7 @@ if __name__ == "__main__":
 
 	# Define the command line arguments to be expected
 	parser.add_argument('--pipeline_id', help="Unique identifier for this instance of the module", required=True)
-	parser.add_argument('--param_file', help="Full path to FAIR parameter file", default="./parameters/fair_ar6_climate_params_v4.0.nc")
+	parser.add_argument('--param_file', help="Full path to Hector parameter file", default="./hector_params.tgz")
 
 	# Parse the arguments
 	args = parser.parse_args()

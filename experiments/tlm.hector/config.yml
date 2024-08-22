@@ -10,14 +10,11 @@ global-options:
 
 climate_step:
     temperature:
-        module_set: "fair"
+        module_set: "hector"
         module: "temperature"
         pipeline_file: "pipeline.yml"
         generates_climate_output: true
-#        input_data_file:
-#              - "emissions.csv"
-#        options:
-#              rcmip_file: emissions.csv
+
 
 sealevel_step:
     ocean:
