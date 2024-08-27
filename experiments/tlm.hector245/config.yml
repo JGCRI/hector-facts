@@ -1,5 +1,5 @@
 global-options:
-    nsamps: 3
+    nsamps: 1
     scenario: ssp245
     pyear_start: 2020
     pyear_end: 2150
@@ -13,9 +13,9 @@ climate_step:
         module_set: "facts"
         module: "dummy"
         input_data_file:
-            - "tlm.offline.temperature.fair.temperature_climate.nc"
+            - "tlm.hector245.temperature.fair.temperature_climate.nc"
         climate_output_data:
-            - "tlm.offline.temperature.fair.temperature_climate.nc"
+            - "tlm.hector245.temperature.fair.temperature_climate.nc"
         generates_climate_output: true
 
 sealevel_step:

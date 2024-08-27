@@ -11,7 +11,7 @@ file_dir <- "C:/Users/done231/OneDrive - PNNL/Desktop/SLR_output"
 setwd(file_dir)
 
 # SSP 585, default scenario for this FACTS run (can select a different one)
-ini_file <- system.file("input/hector_ssp585.ini",package='hector')
+ini_file <- system.file("input/hector_ssp245.ini",package='hector')
 core <- newcore(ini_file)
 run(core)
 
@@ -36,15 +36,15 @@ h_ohc_ext <- cumsum(h_ohc_ext)
 h_gmst_ext <- c(h_gmst_val,nas)
 #h_tas_ext <- c(h_tas_val,nas)
 
-# Single sample FaIR run -- replace gmst and ohc, leaving oceantemp from FaIR (not a Hector)
-# nc_onesamp <- nc_open("onesamp_climate.nc",write=TRUE)
-# #f_gmst <- ncvar_get(nc_onesamp,"ssp585/surface_temperature")
-# #f_ohc <- ncvar_get(nc_onesamp,"ssp585/ocean_heat_content")
-# #f_oceantemp <- ncvar_get(nc_onesamp,"ssp585/deep_ocean_temperature")
-# #years <- ncvar_get(nc_onesamp,"ssp585/years")
-# ncvar_put(nc_onesamp,"ssp585/surface_temperature",h_gmst_ext)
-# ncvar_put(nc_onesamp,"ssp585/ocean_heat_content",h_ohc_ext)
-# nc_close(nc_onesamp)
+#Single sample FaIR run -- replace gmst and ohc, leaving oceantemp from FaIR (not a Hector)
+nc_onesamp <- nc_open("tlm.global245.nc",write=TRUE)
+#f_gmst <- ncvar_get(nc_onesamp,"ssp585/surface_temperature")
+#f_ohc <- ncvar_get(nc_onesamp,"ssp585/ocean_heat_content")
+#f_oceantemp <- ncvar_get(nc_onesamp,"ssp585/deep_ocean_temperature")
+#years <- ncvar_get(nc_onesamp,"ssp585/years")
+#ncvar_put(nc_onesamp,"ssp245/surface_temperature",h_gmst_ext)
+#ncvar_put(nc_onesamp,"ssp245/ocean_heat_content",h_ohc_ext)
+nc_close(nc_onesamp)
 
 # Single sample FaIR run (unedited)
 # nc_onesamp <- nc_open("onesamp_climate - backup.nc")
@@ -64,15 +64,21 @@ h_gmst_ext <- c(h_gmst_val,nas)
 # mean(ohc_diff)
 # 
 # Load in tlm.hector ncdf output
-nc_hector <- nc_open("hector_output_8-6.nc")
+nc_hector <- nc_open("hector.tlm.hector.245.sl.nc")
 h_output <- ncvar_get(nc_hector,"sea_level_change")
 years <- ncvar_get(nc_hector,"years")
 nc_close(nc_hector)
 
+# fair output
+nc_fair <- nc_open("fair.tlm.offline.245.sl.nc")
+f_output <- ncvar_get(nc_fair,"sea_level_change")
+nc_close(nc_fair)
+
 # Plot tlm.hector output
 h_slr_plot <- ggplot() +
-  geom_line(aes(x=years,y=h_output)) +
-  labs(title = "FACTS experiment with Hector input",
+  geom_line(aes(x=years,y=h_output,color="Hector")) +
+  geom_line(aes(x=years,y=f_output[,1],color="FaIR")) +
+  labs(title = "FACTS experiment with Hector input - SSP 2-4.5",
        x = "Year",
        y = "Sea Level Change (mm)") +
   theme_minimal()

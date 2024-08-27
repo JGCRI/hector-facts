@@ -44,11 +44,16 @@ slr_avg <- slr_long %>%
   group_by(year) %>%
   summarize(avg = mean(sea_level_change))
 
+# Get median SLR value
+slr_med <- slr_long %>%
+  group_by(year) %>%
+  summarize(med = median(sea_level_change))
+
 # Plot data
 slr_plot <- ggplot() +
   geom_line(data = slr_long, aes(x=year,y=sea_level_change,group=sample),color="gray",alpha=0.5) +
-  geom_line(data = slr_avg, aes(x=year,y=avg),color="blue",linewidth=1) +
-  geom_line(aes(x=years,y=h_output),color="red",linewidth=1) +
+  geom_line(data = slr_med, aes(x=year,y=med),color="blue",linewidth=1) +
+  #geom_line(aes(x=years,y=h_output),color="red",linewidth=1) +
   labs(title = "FACTS Offline Experiment",
        x = "Year",
        y = "Sea Level Change (mm)") +

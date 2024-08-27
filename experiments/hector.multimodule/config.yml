@@ -1,0 +1,38 @@
+global-options:
+    nsamps: 1
+    scenario: ssp585
+    pyear_start: 2020
+    pyear_end: 2150
+    pyear_step: 10
+    baseyear: 2005
+    pipeline_file: "pipeline.yml"
+
+
+climate_step:
+    dummy:
+        module_set: "facts"
+        module: "dummy"
+        input_data_file:
+            - "hector.multimodule.temperature.fair.temperature_climate.nc"
+        climate_output_data:
+            - "hector.multimodule.temperature.fair.temperature_climate.nc"
+        generates_climate_output: true
+
+sealevel_step:
+    GrIS1f:
+        module_set: "FittedISMIP"
+        module: "GrIS"
+
+    ocean:
+        pipeline_file: "pipeline.offline.yml"
+        module_set: "tlm"
+        module: "sterodynamics"
+
+totaling_step:
+    total:
+        module_set: "facts"
+        module: "total"
+        loop_over_workflows: true
+        loop_over_scales: true
+        stages:
+            - workflow
