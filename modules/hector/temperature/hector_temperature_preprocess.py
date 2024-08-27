@@ -9,12 +9,18 @@ import pandas as pd
 
 def hector_preprocess_temperature(scenario, rcmip_file, pipeline_id):
 
-	# TODO - delete the arguments and stuff
-	# TODO this might be a one day thing if it turns out we need to do the rcmip conversions our selves...
-	# open an issue about this??? idk if necessary this only needs to be added
+	# TODO - delete the rcmip file argument or add the Hector rcmip conversions
+	# TODO - change emis from none to actual emissions information? 
+	sys.stdout.write("Hello, World KD's preprocessing!\n")
 
+	# Definitions
+	REFERENCE_YEAR = 1750
 
-	sys.stdout.write("Hello, World my preprocessing!\n")
+	# Save the preprocessed data to a pickle
+	output = {"emis": None, "REFERENCE_YEAR": REFERENCE_YEAR, "scenario": scenario, "rcmip_file": rcmip_file}
+	outfile = open(os.path.join(os.path.dirname(__file__), "{}_preprocess.pkl".format(pipeline_id)), 'wb')
+	pickle.dump(output, outfile, protocol=-1)
+	outfile.close()
 	return(None)
 
 

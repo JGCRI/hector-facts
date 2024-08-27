@@ -2,9 +2,10 @@ import argparse
 import sys
 
 
-def fair_postprocess_temperature(pipeline_id):
+def hector_postprocess_temperature(pipeline_id):
 
 	# There is no post-processing steps at this time.
+    sys.stdout.write("Hello, World my post processing script!\n")
 
 	return(None)
 
@@ -12,7 +13,7 @@ def fair_postprocess_temperature(pipeline_id):
 if __name__ == "__main__":
 
 	# Initialize the command-line argument parser
-	parser = argparse.ArgumentParser(description="Run the postprocess stage for the FAIR AR6 temperature module",\
+	parser = argparse.ArgumentParser(description="Run the postprocess stage for the Hector temperature module",\
 	epilog="Note: This is meant to be run as part of the Framework for the Assessment of Changes To Sea-level (FACTS)")
 
 	# Define the command line arguments to be expected
@@ -22,7 +23,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	# Run the code
-	fair_postprocess_temperature(pipeline_id=args.pipeline_id)
+	hector_postprocess_temperature(pipeline_id=args.pipeline_id)
 
 
 	sys.exit()
