@@ -10,7 +10,7 @@ import pandas as pd
 def hector_preprocess_temperature(scenario, rcmip_file, pipeline_id):
 
 	# TODO - delete the rcmip file argument or add the Hector rcmip conversions
-	# TODO - change emis from none to actual emissions information? 
+	# TODO - change emis from none to actual emissions information?
 	sys.stdout.write("Hello, World KD's preprocessing!\n")
 
 	# Definitions

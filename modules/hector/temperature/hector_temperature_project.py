@@ -6,13 +6,25 @@ import numpy as np
 import argparse
 import pickle
 from datetime import datetime
+import subprocess
 
 
-# Function that generates a samples form Hector model with specified emissions scenarios
-def my_run_hector(args, emissions, reference_year=1750):
+# Function that generates a samples form Hector model with specified emissions scenarios and
+# the data frame of all the parameter values that used be used to drive the Hector runs.
+def my_run_hector(scn, pfile):
 
-	# Return temperature and ocean heat content
-	#return(Tc, Tdeep, ohcc)
+	hector_script = "runHector.R"
+
+	if (os.path.exists(hector_script) == False):
+		raise ValueError("Hector R script not found!")
+
+	rslt = subprocess.run(['Rscript', hector_script, scn, pfile], capture_output=True, text=True)
+
+	# Check for errors
+	if rslt.returncode != 0:
+		print("R script failed with the following error:")
+		print(rslt.stderr)
+
 	return(None)
 
 
@@ -23,7 +35,7 @@ def CenterSmooth(temp, years, cyear_start, cyear_end, smooth_win):
 	ref_idx = np.flatnonzero(np.logical_and(years >= cyear_start, years <= cyear_end))
 
 	# Take the mean over the centering range for each sample and subtract
-	ref_temp = np.mean(temp[:,ref_idx], axis=1)
+	ref_temp = np.nanmean(temp[:,ref_idx], axis=1)
 	center_temp = temp - ref_temp[:,np.newaxis]
 
 	# Smooth the centered temperatures
@@ -48,113 +60,104 @@ def Smooth(x, w=5):
 
 
 def hector_project_temperature(nsamps, seed, cyear_start, cyear_end, smooth_win, pipeline_id):
-	sys.stdout.write("Hello, World my hector_project_temperature!\n")
 
 	# Load the preprocessed data
-	#preprocess_file = "{}_preprocess.pkl".format(pipeline_id)
-	#with open(preprocess_file, 'rb') as f:
-	#	preprocess_data = pickle.load(f)
+	preprocess_file = "{}_preprocess.pkl".format(pipeline_id)
+	with open(preprocess_file, 'rb') as f:
+		preprocess_data = pickle.load(f)
 
-#	emis = preprocess_data["emis"]
-#	REFERENCE_YEAR = preprocess_data["REFERENCE_YEAR"]
-	REFERENCE_YEAR = 2005
-#	scenario = preprocess_data["scenario"]
-#	rcmip_file = preprocess_data["rcmip_file"]
+	REFERENCE_YEAR = preprocess_data["REFERENCE_YEAR"]
+	scenario = preprocess_data["scenario"]
+	# TODO add rcmip file information if/when we swtich to using the rcmip files
+	rcmip_file = None
 
 	# Load the fit data
-#	fit_file = "{}_fit.pkl".format(pipeline_id)
-#	with open(fit_file, 'rb') as f:
-#		fit_data = pickle.load(f)
+	fit_file = "{}_fit.pkl".format(pipeline_id)
+	with open(fit_file, 'rb') as f:
+		fit_data = pickle.load(f)
 
-#	pars = fit_data["pars"]
-#	param_file = fit_data["param_file"]
-
-	# Initialize lists to hold samples
-#	temps = []
-#	deeptemps = []
-#	ohcs = []
+	pars = fit_data["pars"]
+	param_file = fit_data["param_file"]
 
 	# Projection years
-#	proj_years = np.arange(REFERENCE_YEAR, 2501)
+	proj_years = np.arange(REFERENCE_YEAR, 2501)
 
-	# What version of Hector are we using?
 	# TODO automate this instead of hard coding this
 	hector_version = "V3.2.0"
 
-	# How many parameter sets do we have?
-#	nsims = len(pars["simulation"])
+	# How many parameter sets do we have? And how
+	# to handel to generate the nsamps?
+	nsims = len(pars)
+	rng = np.random.default_rng(seed)
 
+	if nsamps > nsims:
+		run_idx = np.arange(nsims)
+		sample_idx = rng.choice(nsims, nsamps, nsamps>nsims)
+	else:
+		run_idx = rng.choice(nsims, nsamps, nsamps>nsims)
+		sample_idx = np.arange(nsamps)
 
-#	# Generate nsamps of simulation indices to sample
-#	rng = np.random.default_rng(seed)
-#	if nsamps > nsims:
-#		run_idx = np.arange(nsims)
-#		sample_idx = rng.choice(nsims, nsamps, nsamps>nsims)
-#	else:
-#		run_idx = rng.choice(nsims, nsamps, nsamps>nsims)
-#		sample_idx = np.arange(nsamps)
+	# Save parameter combinations want to use in Hector
+	# then run Hector
+	pars_to_run = pars.iloc[run_idx].reset_index(drop=True)
+	pfile = './pars_to_use.csv'
+	pars_to_run.to_csv(pfile, index=False)
+	my_run_hector(scenario, pfile)
 
-	# Run the FAIR model
-	#for i in run_idx:
-	#	this_pars = pars.isel(simulation=i)
-	#	this_temp, this_deeptemp, this_ohc = my_run_fair(this_pars, emis)
-	#	temps.append(this_temp)
-	#	deeptemps.append(this_deeptemp)
-	#	ohcs.append(this_ohc)
-
-	# Recast the output as numpy arrays
-	#temps = np.array(temps)
-	#deeptemps = np.array(deeptemps)
-	#ohcs = np.array(ohcs)
+	# Load the Hector results and format for the CenterSmooth function
+	temps = np.transpose(np.array(pd.read_csv('./hector_gmst.csv')))
+	ohcs =  np.transpose(np.array(pd.read_csv('./hector_gmst.csv')))
 
 	# Center and smooth the samples
-	#temps = CenterSmooth(temps, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
+	#sys.stdout.write("Hello, made it here!\n")
+	temps = CenterSmooth(temps, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
 	#deeptemps = CenterSmooth(deeptemps, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
-	#ohcs = CenterSmooth(ohcs, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
+	ohcs = CenterSmooth(ohcs, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
 
 	# Conform the output to shapes appropriate for output
-	#temps = temps[sample_idx,:,np.newaxis]
+	temps = temps[sample_idx,:,np.newaxis]
 	#deeptemps = deeptemps[sample_idx,:,np.newaxis]
-	#ohcs = ohcs[sample_idx,:,np.newaxis]
+	ohcs = ohcs[sample_idx,:,np.newaxis]
 
 	# Set up the global attributes for the output netcdf files
-	#attrs = {"Source": "FACTS",
-	#		 "Date Created": str(datetime.now()),
-	#		 "Description": (
-	#			 f"Fair v={fair_version} scenario simulations with AR6-calibrated settings."
-	#		 " Simulations based on parameters developed here: https://github.com/chrisroadmap/ar6/tree/main/notebooks."
-	#		 " Parameters obtained from: https://zenodo.org/record/5513022#.YVW1HZpByUk."),
-	#		"Method": (
-	#			"Temperature and ocean heat content were returned from fair.foward.fair_scm() in emission-driven mode."),
-	#		"Scenario emissions file": rcmip_file,
-	#		"FAIR Parameters file": param_file,
-	#		"FaIR version": fair_version,
-	#		 "Scenario": scenario,
-	#		 "Centered": "{}-{} mean".format(cyear_start, cyear_end),
-	#		 "Smoothing window": "{} years".format(smooth_win),
-	#		 "Note": "Code provided by Kelly McCusker of Rhodium Group Climate Impact Lab and adapted for use in FACTS."
-	#		}
+	attrs = {"Source": "FACTS",
+			 "Date Created": str(datetime.now()),
+			 "Description": (
+				 f"Hector v={hector_version} scenario simulations."
+				#TODO need to add the correct links here!
+			 " Simulations based on parameters developed here: https://github.com/chrisroadmap/ar6/tree/main/notebooks."
+			 " Parameters obtained from: https://zenodo.org/record/5513022#.YVW1HZpByUk."),
+			"Method": (
+				"Temperature and ocean heat content were returned from Hector in emission-driven mode."),
+			"Scenario emissions file": "default Hector SSPX inputs",
+			"Hector Parameters file": param_file,
+			"Hector version": hector_version,
+			 "Scenario": scenario,
+			 "Centered": "{}-{} mean".format(cyear_start, cyear_end),
+			 "Smoothing window": "{} years".format(smooth_win),
+			 "Note": "Code adapted for Hector by K. Dorheim and C. Donegan based on https://zenodo.org/records/10403331"
+			}
 
-	## Create the variable datasets
-	#tempds = xr.Dataset({"surface_temperature": (("samples", "years", "locations"), temps, {"units":"degC"}),
-	#						"lat": (("locations"), [np.inf]),
-	#						"lon": (("locations"), [np.inf])},
-	#	coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
+	# Create the variable datasets
+	tempds = xr.Dataset({"surface_temperature": (("samples", "years", "locations"), temps, {"units":"degC"}),
+							"lat": (("locations"), [np.inf]),
+							"lon": (("locations"), [np.inf])},
+		coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
 
 	#deeptempds = xr.Dataset({"deep_ocean_temperature": (("samples", "years", "locations"), deeptemps, {"units":"degC"}),
 	#						"lat": (("locations"), [np.inf]),
 	#						"lon": (("locations"), [np.inf])},
 	#	coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
 
-	#ohcds = xr.Dataset({"ocean_heat_content": (("samples", "years", "locations"), ohcs, {"units":"J"}),
-	#						"lat": (("locations"), [np.inf]),
-	#						"lon": (("locations"), [np.inf])},
-	#	coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
+	ohcds = xr.Dataset({"ocean_heat_content": (("samples", "years", "locations"), ohcs, {"units":"J"}),
+							"lat": (("locations"), [np.inf]),
+							"lon": (("locations"), [np.inf])},
+		coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
 
-	## Write the datasets to netCDF
-	#tempds.to_netcdf("{}_gsat.nc".format(pipeline_id), encoding={"surface_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
+	# Write the datasets to netCDF
+	tempds.to_netcdf("{}_gsat.nc".format(pipeline_id), encoding={"surface_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
 	#deeptempds.to_netcdf("{}_oceantemp.nc".format(pipeline_id), encoding={"deep_ocean_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
-	#ohcds.to_netcdf("{}_ohc.nc".format(pipeline_id), encoding={"ocean_heat_content": {"dtype": "float32", "zlib": True, "complevel":4}})
+	ohcds.to_netcdf("{}_ohc.nc".format(pipeline_id), encoding={"ocean_heat_content": {"dtype": "float32", "zlib": True, "complevel":4}})
 
 	## create a single netCDF file that is compatible with modules expecting parameters organized in a certain fashion
 	#pooledds = xr.Dataset({"surface_temperature": (("years","samples"), temps[::,::,0].transpose(), {"units":"degC"}),
