@@ -81,7 +81,7 @@ docker --version
 Once git is installed, clone the Hector-FACTS repository:
 
 ```
-git clone https://github.com/kdorheim/hector-facts.git
+git clone https://github.com/JGCRI/hector-facts.git
 ```
 
 Navigate to the Hector-FACTS directory this will be project working direcotry (PROJ_DIR) for the rest of the instructions. 
