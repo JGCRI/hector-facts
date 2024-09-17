@@ -108,12 +108,10 @@ cd docker
 sh develop.sh
 ```
 
-Build the container where Hector-FACTS (and FACTS) experiments can be run. Note: Replace PROJ_DIR with the full path to the Hector-FACTS repository. After launching, navigate to the /opt folder. Running ls here should show the contents of the Hector-FACTS repository.
+Build the container where Hector-FACTS (and FACTS) experiments can be run. Note: Replace PROJ_DIR with the full path to the Hector-FACTS repository. After launching, navigate to the /opt folder. Running `ls` here should show the contents of the Hector-FACTS repository.
 
 ```
 docker run --rm -it -v PROJ_DIR:/opt facts
 cd opt
 ```
-
-
 
