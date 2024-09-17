@@ -26,4 +26,7 @@ https://zenodo.org/record/7478192/files/ssp_landwaterstorage_preprocess_data.tgz
 https://zenodo.org/record/7478192/files/tlm_sterodynamics_cmip6_data.tgz
 https://zenodo.org/record/7478192/files/tlm_sterodynamics_preprocess_data.tgz
 https://zenodo.org/record/7478448/files/kopp14_sterodynamics_data.tgz
+https://zenodo.org/records/13774542/files/hector-input.tgz
+https://zenodo.org/records/13774542/files/hector_params.tgz
+
 

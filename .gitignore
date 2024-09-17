@@ -1,3 +1,9 @@
+# Ignore files changed as part of an experiment run 
+*.yml
+*.lst
+test.sh
+mytest.sh
+
 .DS_Store
 *.pkl
 /re.session*

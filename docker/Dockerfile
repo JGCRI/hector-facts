@@ -1,12 +1,9 @@
 FROM ubuntu:focal AS facts-core
 
-# set env variables for RCT and apt
 ENV DEBIAN_FRONTEND="noninteractive"
 
-# set shell for RUN instruction
 SHELL [ "/bin/bash", "-c" ]
 
-# installs dependences
 RUN apt-get update &&\
     apt-get install -y \
         python3.9 \
@@ -18,30 +15,48 @@ RUN apt-get update &&\
         libnetcdf-dev \
         gnupg \
         curl \
-        apt-transport-https
+        apt-transport-https \
+        dnsutils \
+        iputils-ping
 
-# Creates and activates python3 virtual environment
-RUN python3 -m venv --system-site-packages factsVe &&\
-    source factsVe/bin/activate
+RUN python3 -m venv --system-site-packages /home/${NB_USER}/factsVe &&\
+    source /home/${NB_USER}/factsVe/bin/activate
 
-# installs required FACTS packages
 RUN pip install --no-cache-dir --upgrade \
         setuptools==69.0.2 pip==23.3.1 wheel==0.42.0
 
 RUN pip install --no-cache-dir \
-        radical.entk==1.60.0 \
+        radical.entk==1.52.0 \
+        radical.gtod==1.52.0 \
+        radical.pilot==1.52.1 \
+        radical.saga==1.52.0 \
+        radical.utils==1.52.0 \
         pyyaml==6.0.1 \
         xarray==2023.1.0 \
         numpy==1.24.4 \
-        netcdf4==1.6.5
-        
-# installs R for ubuntu2 0.04 Focal
+        netcdf4==1.6.5 \
+        h5py \
+        dask
+
 RUN apt-get update &&\
     apt-get install -y --no-install-recommends r-base \
         cmake \
         libopenblas-dev \
         gfortran
 
+# Installing Hector thigns TODO see if can clean up 
+RUN apt-get update && apt-get install -y \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    libgit2-dev \
+    cmake \
+    git 
+
+
+# Install Hector R package from GitHub
+RUN R -e "install.packages('remotes')"
+RUN R -e "remotes::install_github('JGCRI/hector')"
 
 ARG NB_USER=jovyan
 ARG NB_UID=1000
@@ -54,19 +69,25 @@ RUN adduser --disabled-password \
     --uid ${NB_UID} \
     ${NB_USER}
 
-# Make sure the contents of our repo are in ${HOME}
 USER root
-RUN chown -R ${NB_UID} ${HOME}
+RUN chown -R ${NB_UID}:${NB_UID} /home/${NB_USER}
 USER ${NB_USER}
 
-# make directory for radical pilot sandbox
-RUN mkdir -p ~/radical.pilot.sandbox
+RUN mkdir -p /home/${NB_USER}/radical.pilot.sandbox
 
-# Activate venv
-RUN echo -e ". /factsVe/bin/activate" > ~/.bashrc
+ENV RP_PILOT_SANDBOX=/home/${NB_USER}/radical.pilot.sandbox
 
-# return a shell to the user
-CMD /bin/bash
+RUN echo 'source /home/${NB_USER}/factsVe/bin/activate' >> /home/${NB_USER}/.bashrc
+
+RUN mkdir -p /home/${NB_USER}/.radical/pilot/configs
+RUN printf '{\n\
+    "local": {\n\
+        "rp_version"    : "installed",\n\
+        "virtenv_mode"  : "use"\n\
+    }\n\
+}' > /home/${NB_USER}/.radical/pilot/configs/resource_local.json
+
+CMD ["/bin/bash", "-c", "source /home/${NB_USER}/factsVe/bin/activate && exec /bin/bash"]
 
 FROM facts-core AS facts-jupyter
 
@@ -80,4 +101,4 @@ RUN pip install --no-cache-dir \
 EXPOSE 8888
 USER ${NB_USER}
 
-#ENTRYPOINT ["jupyter", "lab","--ip=0.0.0.0","--allow-root"]
+ENTRYPOINT ["jupyter", "lab", "--ip=0.0.0.0", "--allow-root"]

@@ -125,15 +125,17 @@ def print_experimentsteps_script(experimentsteps, exp_dir = None):
 
     print('#!/bin/bash\n')
 
-    print('if [ -z "$WORKDIR" ]; then  ')
-    print('   WORKDIR=/scratch/`whoami`/test.`date +%s`')
-    print('fi')
+    print('WORKDIR=$HOME/scratch/`whoami`/test.`date +%s`')
     print('mkdir -p $WORKDIR\n')
-    print('if [ -z "$OUTPUTDIR" ]; then  ')
-    print('   OUTPUTDIR=/scratch/`whoami`/test.`date +%s`/output')
-    print('fi')
+
+    print('OUTPUTDIR=$HOME/scratch/`whoami`/test.`date +%s`/output')
     print('mkdir -p $OUTPUTDIR')
     print('BASEDIR=`pwd`')
+    print('SHARED=$BASEDIR')
+    print('mkdir -p $RP_PILOT_SANDBOX/env')
+    print('cd $BASEDIR')
+    print('cp -r rp_named_env.rp.sh $RP_PILOT_SANDBOX/env/')
+
 
     for this_step, pipelines in experimentsteps.items():
         print('\n#EXPERIMENT STEP: ', this_step, '\n')
