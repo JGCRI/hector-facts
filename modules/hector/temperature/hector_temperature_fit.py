@@ -15,8 +15,6 @@ def hector_fit_temperature(param_file, pipeline_id):
 	pickle.dump(output, outfile, protocol=-1)
 	outfile.close()
 
-	sys.stdout.write("Hello, World my fit script!\n")
-
 	return(None)
 
 
