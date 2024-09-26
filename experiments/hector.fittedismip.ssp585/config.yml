@@ -1,5 +1,5 @@
 global-options:
-    nsamps: 2
+    nsamps: 200
     scenario: ssp585
     pyear_start: 2020
     pyear_end: 2300
@@ -8,7 +8,7 @@ global-options:
 
 climate_step:
     temperature:
-        module_set: "fair"
+        module_set: "hector"
         module: "temperature"
         generates_climate_output: true
 

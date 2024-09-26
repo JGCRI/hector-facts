@@ -107,17 +107,14 @@ def hector_project_temperature(nsamps, seed, cyear_start, cyear_end, smooth_win,
 	# Load the Hector results and format for the CenterSmooth function
 	temps = np.transpose(np.array(pd.read_csv('hector_gsat.csv')))
 	ohcs =  np.transpose(np.array(pd.read_csv('hector_ohc.csv')))
-	deeptemps =  np.transpose(np.array(pd.read_csv('hector_deeptemps.csv')))
 
 	# Center and smooth the samples
 	temps = CenterSmooth(temps, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
     # TODO there is some issue with the CenterSmooth function and the ocean heat content data
-	#deeptemps = CenterSmooth(deeptemps, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
 	#ohcs = CenterSmooth(ohcs, proj_years, cyear_start=cyear_start, cyear_end=cyear_end, smooth_win=smooth_win)
 
 	# Conform the output to shapes appropriate for output
 	temps = temps[sample_idx,:,np.newaxis]
-	deeptemps = deeptemps[sample_idx,:,np.newaxis]
 	ohcs = ohcs[sample_idx,:,np.newaxis]
 
 	# Set up the global attributes for the output netcdf files
@@ -144,11 +141,6 @@ def hector_project_temperature(nsamps, seed, cyear_start, cyear_end, smooth_win,
 							"lon": (("locations"), [np.inf])},
 		coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
 
-	deeptempds = xr.Dataset({"deep_ocean_temperature": (("samples", "years", "locations"), deeptemps, {"units":"degC"}),
-							"lat": (("locations"), [np.inf]),
-							"lon": (("locations"), [np.inf])},
-		coords={"years": proj_years, "locations": [-1], "samples": np.arange(nsamps)}, attrs=attrs)
-
 	ohcds = xr.Dataset({"ocean_heat_content": (("samples", "years", "locations"), ohcs, {"units":"J"}),
 							"lat": (("locations"), [np.inf]),
 							"lon": (("locations"), [np.inf])},
@@ -156,17 +148,14 @@ def hector_project_temperature(nsamps, seed, cyear_start, cyear_end, smooth_win,
 
 	# Write the datasets to netCDF
 	tempds.to_netcdf("{}_gsat.nc".format(pipeline_id), encoding={"surface_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
-	deeptempds.to_netcdf("{}_oceantemp.nc".format(pipeline_id), encoding={"deep_ocean_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
 	ohcds.to_netcdf("{}_ohc.nc".format(pipeline_id), encoding={"ocean_heat_content": {"dtype": "float32", "zlib": True, "complevel":4}})
 
 	# create a single netCDF file that is compatible with modules expecting parameters organized in a certain fashion
 	pooledds = xr.Dataset({"surface_temperature": (("years","samples"), temps[::,::,0].transpose(), {"units":"degC"}),
-							"deep_ocean_temperature": (("years","samples"), deeptemps[::,::,0].transpose(), {"units":"degC"}),
 							"ocean_heat_content": (("years","samples"), ohcs[::,::,0].transpose(), {"units":"J"})},
 		coords={"years": proj_years, "samples": np.arange(nsamps)}, attrs=attrs)
 	pooledds.to_netcdf("{}_climate.nc".format(pipeline_id), group=scenario,encoding={"ocean_heat_content": {"dtype": "float32", "zlib": True, "complevel":4},
-		"surface_temperature": {"dtype": "float32", "zlib": True, "complevel":4},
-		"deep_ocean_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
+		"surface_temperature": {"dtype": "float32", "zlib": True, "complevel":4}})
 	yearsds = xr.Dataset({"year": proj_years})
 	yearsds.to_netcdf("{}_climate.nc".format(pipeline_id), mode='a')
 

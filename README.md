@@ -113,5 +113,50 @@ Build the container where Hector-FACTS (and FACTS) experiments can be run. Note:
 ```
 docker run --rm -it -v PROJ_DIR:/opt facts
 cd opt
+ls
 ```
 
+To check to see if everything it set up properly by running the dummy experiment. 
+
+```
+python3 runFACTS.py experiments/dummy
+```
+The output should resemble the following, but the most important thing to look for is the line: `All components terminated`. This indicates that the experiment successfully completed. If you do not see this message, it may mean the experiment encountered an error, and further investigation may be needed.
+
+```
+EnTK session: re.session.db906fca-1de6-11ef-9cca-0242ac110002
+Creating AppManager
+Setting up ZMQ queues                                                         ok
+AppManager initialized                                                        ok
+Validating and assigning resource manager                                     ok
+****** STEP: sealevel_step ******
+Setting up ZMQ queues                                                        n/a
+All components created
+Update: dummy.dummy.facts.dummy state: SCHEDULING
+Update: dummy.dummy.facts.dummy.preprocess state: SCHEDULING
+Update: dummy.dummy.facts.dummy.preprocess.task1 state: SCHEDULING
+Update: dummy.dummy.facts.dummy.preprocess.task1 state: SCHEDULED
+Update: dummy.dummy.facts.dummy.preprocess state: SCHEDULED
+Update: dummy.dummy.facts.dummy.preprocess.task1 state: SUBMITTING
+Update: dummy.dummy.facts.dummy.preprocess.task1 state: EXECUTED
+Update: dummy.dummy.facts.dummy.preprocess.task1 state: DONE
+Update: dummy.dummy.facts.dummy.preprocess state: DONE
+Update: dummy.dummy.facts.dummy state: DONE
+All components terminated
+```
+
+Here is another way to run the experiments (it is pretty helpful when debugging). Again from the opt directory run the following,
+
+```
+python3 runFACTS.py --shellscript experiments/dummy > mydummy.sh
+```
+
+the `mydummy.sh` script can be executed in two ways by running the entire script through bash or alternatively, you can manually execute each line of the script by copying the commands into your terminal one at a time. Executeing the sh script line by line can be helpful when debugging.
+
+## Hector-FACTS Experiments 
+
+This assumes that you have the Hector-FACTS up and running on a docker container. 
+
+```
+python3 runFACTS.py experiments/hector.tlm.global
+```
