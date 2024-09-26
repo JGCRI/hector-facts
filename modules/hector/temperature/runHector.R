@@ -14,8 +14,6 @@ pfile <- args[2]
 ini_path <- paste0("./hector-input/hector_", scn, ".ini")
 stopifnot(file.exists(ini_path))
 stopifnot(file.exists(pfile))
-#ini_path <- system.file(package = "hector", "input/hector_ssp585.ini")
-#pfile <- "~/Documents/2024/Hector-SLR/hector-facts/modules-data/hector_params.csv"
 
 # Import the params to be used here and rename the data frame so that the parameter
 # names are recognized by the hector helper functions.
@@ -59,18 +57,13 @@ runhector <- function(hc, pars){
         UNITS <- 60.0 * 60.0 * 24.0 * 365.2422  # Seconds per year
         ohc <-  cumsum(heatflux) * OCEAN_AREA * UNITS
 
-        # Convert from interior heatflux to deep ocean temp
-        C <- 4.18e6  # Specific heat capacity of seawater in J/m³/°C
-        V <- 1.37e18  # Volume of the deep ocean in m³
-        deeptemps <- cumsum(interior_heatflux * OCEAN_AREA * UNITS) / (C * V)
-
-        return(list(gsat = gsat, ohc = ohc, deeptemps = deeptemps))
+        return(list(gsat = gsat, ohc = ohc))
     }, error = function(e){
 
 
         gsat <- ohc <-  deeptemps <- rep(NA, length.out = length(years))
 
-        return(list(gsat = gsat, ohc = ohc, deeptemps = deeptemps))
+        return(list(gsat = gsat, ohc = ohc))
 
     })
 
@@ -81,8 +74,8 @@ runhector <- function(hc, pars){
 # a parameter dataframe into a nice matrix for each variable.
 # Args
 #   outlist: nested list created by applying runhector to a parameter dataframe
-#   var: str name of the hector variable to extract from the nexted list
-# Returns: matrix of results years x simluation for a single variable
+#   var: str name of the hector variable to extract from the netcdf list
+# Returns: matrix of results years x simulation for a single variable
 format_runhector <- function(outlist, var){
     do.call('cbind', lapply(outlist, function(x){
         return(x[[var]])
@@ -104,4 +97,3 @@ hector_results <- apply(params, 1, runhector, hc = hc)
 # pass information between R and Python.
 write.csv(x = format_runhector(hector_results, "gsat"), file = "hector_gsat.csv", row.names = FALSE)
 write.csv(x = format_runhector(hector_results, "ohc"), file = "hector_ohc.csv", row.names = FALSE)
-write.csv(x = format_runhector(hector_results, "deeptemps"), file = "hector_deeptemps.csv", row.names = FALSE)
